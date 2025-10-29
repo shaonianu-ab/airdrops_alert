@@ -59,7 +59,9 @@ def format_to_msg(item):
             f"💰 数量: {amount}",
             f"⏰ 时间: {time_}"]
 
-    if " " not in points:
+    if points == "未公布":
+        msg.append(f"⚡ 类型: 未公布")
+    elif " " not in points:
         if type_ != "tge":
             msg.append(f"⚡ 类型: 空投--先到先得")
         else:

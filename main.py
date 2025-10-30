@@ -37,6 +37,7 @@ def get_airdrop_data():
 
 last_airdrops = {}
 scheduler = BackgroundScheduler(timezone="Asia/Shanghai")
+init_flag = True
 
 
 # ======================
@@ -142,9 +143,11 @@ def show_today_airdrops():
 
 def monitor_airdrop_updates():
     """每30秒检测更新"""
+    global init_flag
     time.sleep(random.randint(5, 15))
     global last_airdrops
     data = get_airdrop_data()
+    today = datetime.date.today().isoformat()
     if not data:
         return
 
@@ -168,7 +171,6 @@ def monitor_airdrop_updates():
     for token, new_item in new_airdrops.items():
         old_item = last_airdrops.get(token, {})
         if not old_item:
-            today = datetime.date.today().isoformat()
             if today == new_item.get("date"):
                 msg = format_to_msg(new_item)
                 messages.append(msg)
@@ -176,11 +178,14 @@ def monitor_airdrop_updates():
         else:
             old_points = old_item.get("points", "")
             new_points = new_item.get("points", "")
+            if init_flag and today == new_item.get("date") and old_points != "" and new_points != "":
+                schedule_airdrop_reminder(new_item)
             if old_points == "" and new_points != "":
                 messages.append(format_to_msg(new_item))
                 schedule_airdrop_reminder(new_item)
 
     last_airdrops = new_airdrops
+    init_flag = False
 
     if messages:
         msg_handler.send_to_wx("\n\n".join(messages))
